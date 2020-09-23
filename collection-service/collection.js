@@ -59,31 +59,23 @@ const collectionLocals = [
 
 ];
 
-const getPicker = async (id) => {
-  try {
+const getPicker = (id) => {
     const testid = id.toString();
-    console.log(testid)
-    return await axios.get(`${pickerService}/pickers/${testid}`)
-  } catch (error) {
-    console.error(error)
-  }
+    return axios.get(`${pickerService}/pickers/${testid}`)
+    .then(resp => resp.data)
+    
 };
 
 const returnPicker = async(id) => {
-  const pickerInfo = getPicker(id)
-    .then(response => {
-      if (response.data.name) {
-        console.log(response.data.name);
-      }
-    })
-    .catch(error => {
-      console.log(error)
-    })
-}
-
+  try {
+    return await getPicker(id);
+  } catch(e) {
+    console.error(e)
+  }
+};
+  
 
 app.get('/locals', (req,res) => {
-  console.log("print of the locals to deposit recyclable product");
   res.json(collectionLocals);
 });
 
@@ -101,7 +93,6 @@ app.post('/locals', (req,res) => {
     collaborators} = req.body;
 
   for (var i = 0; i < collectionLocals.length; i++) {
-    console.log(collectionLocals[i].id);
     if (id == collectionLocals[i].id) {
       return res.status(400).json({
         error: 'local registered'
@@ -127,18 +118,19 @@ app.post('/locals', (req,res) => {
 }
 });
 
-app.post('/newCollaborator', (req,res) => {
-  const {localId, pickerId} = req.body;
-  const name = returnPicker(pickerId);
+app.post('/newCollaborator', async (req,res) => {
+  const {pickerId} = req.body;
+  const {localId} = req.body;
+  const data = await returnPicker(pickerId);
   
-  const foundLocalId = collectionLocals.find(subject => subject.id === localId);
+  const foundLocal = collectionLocals.find(subject => subject.id === parseInt(localId));
 
-  if (foundLocalId) {
-    console.log(collectionLocals);
+  if (foundLocal) {
+    foundLocal.collaborators.push(data.name);
+    return res.json(foundLocal);
   }
-
-
-
+  res.status(404).json({error: 'Local not found'})
+  
 });
 
 
