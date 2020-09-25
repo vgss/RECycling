@@ -1,10 +1,12 @@
 const express = require('express');
 
+const eurekaHelper = require('./eureka-helper');
 
-const port = 8081;
+const PORT = 4000;
+const HOST = '0.0.0.0';
+
 const app = express();
 app.use(express.json());
-
 
 const waste_pickers = [
   {
@@ -49,7 +51,6 @@ app.post('/pickers', (req,res) => {
   const {id, name, type} = req.body;
 
   for (var i = 0; i < waste_pickers.length; i++) {
-    console.log(waste_pickers[i].id);
     if (id == waste_pickers[i].id) {
       return res.status(400).json({
         error: 'user registered'
@@ -70,4 +71,5 @@ app.post('/pickers', (req,res) => {
 });
 
 
-app.listen(port);
+app.listen(PORT, HOST);
+eurekaHelper.registerWithEureka('user-service', PORT);
