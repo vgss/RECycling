@@ -1,15 +1,16 @@
 const { request } = require('express');
 const express = require('express');
+
 const axios = require('axios');
-const adapter = require('axios/lib/adapters/http');
 
+const eurekaHelper = require('./eureka-helper');
 
+const PORT = 3000;
+const HOST = '0.0.0.0'
+const pickerService = "http://zuul-gateway:8050/user-service";
 
-const port = 8082;
 const app = express();
 app.use(express.json());
-
-const pickerService = "http://localhost:8081";
 
 const collectionLocals = [
   {
@@ -60,8 +61,8 @@ const collectionLocals = [
 ];
 
 const getPicker = (id) => {
-    const testid = id.toString();
-    return axios.get(`${pickerService}/pickers/${testid}`)
+    const myId = id.toString();
+    return axios.get(`${pickerService}/pickers/${myId}`)
     .then(resp => resp.data)
     
 };
@@ -121,6 +122,7 @@ app.post('/locals', (req,res) => {
 app.post('/newCollaborator', async (req,res) => {
   const {pickerId} = req.body;
   const {localId} = req.body;
+  console.log(localId);
   const data = await returnPicker(pickerId);
   
   const foundLocal = collectionLocals.find(subject => subject.id === parseInt(localId));
@@ -135,4 +137,5 @@ app.post('/newCollaborator', async (req,res) => {
 
 
 
-app.listen(port);
+app.listen(PORT, HOST);
+eurekaHelper.registerWithEureka('collection-service', PORT);

@@ -1,0 +1,62 @@
+version: "3.7"
+services:
+
+  discovery:
+    build: ./discovery
+    container_name: eureka-discovery
+    ports:
+      - "8761:8761"
+    hostname: serviceregistry
+    tty:
+      true
+    restart:
+      unless-stopped
+
+  zuul-gateway:
+    build: ./zuul-gateway
+    container_name: zuul-gateway
+    ports:
+      - "8050:8050"
+    hostname: gateway
+    depends_on:
+      - discovery
+    links:
+      - discovery:discovery
+    tty:
+      true
+    restart:
+      unless-stopped
+  
+  user-service: 
+    build: "./user-service"
+    container_name: user-service
+    ports:
+      - "4000:4000"
+    hostname: user-service
+    depends_on:
+      - discovery
+    links:
+      - discovery:discovery
+    tty:
+      true
+    restart:
+      unless-stopped
+
+
+  collection-service: 
+    build: "./collection-service"
+    container_name: collection-service
+    ports:
+      - "3000:3000"
+    hostname: collection-service
+    depends_on:
+      - discovery
+    links:
+      - discovery:discovery
+    tty:
+      true
+    restart:
+      unless-stopped
+    
+
+
